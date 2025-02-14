@@ -1,0 +1,34 @@
+{
+  "name": "logseq-pankti",
+  "version": "0.0.1",
+  "author": "harsh@aka.al",
+  "description": "Plugin to search and add Panktis from Guru Granth Sahib Ji database to logseq.",
+  "license": "MIT",
+  "scripts": {
+    "dev": "parcel --public-url ./ ./index.html",
+    "build": "parcel build --public-url . --no-source-maps index.html"
+  },
+  "main": "dist/index.html",
+  "targets": {
+    "main": false
+  },
+  "dependencies": {
+    "@logseq/libs": "^0.0.17",
+    "lodash": "^4.17.21",
+    "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.17.15",
+    "events": "^3.3.0",
+    "parcel": "^2.13.3",
+    "path-browserify": "^1.0.1",
+    "util": "^0.12.5"
+  },
+  "browserslist": [
+    "chrome 80"
+  ],
+  "logseq": {
+    "id": "logseq-pankti",
+    "title": "Logseq Pankti"
+  }
+}
