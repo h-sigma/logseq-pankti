@@ -1,8 +1,5 @@
 import "@logseq/libs";
-import {
-  BlockCommandCallback,
-  UIOptions,
-} from "@logseq/libs/dist/LSPlugin.user";
+import { BlockCommandCallback } from "@logseq/libs/dist/LSPlugin.user";
 
 interface GurbaniMatch {
   punjabi: string;
@@ -25,7 +22,9 @@ const dataStringify = (obj: any) => {
 const insertIcon = (pankti: GurbaniMatch, uuid: string) => {
   return `
     <div style="position: absolute; top: 10px; right: 10px; cursor: pointer;"
-        data-on-click="selectPankti" data-uuid="${uuid}" data-pankti="${dataStringify(pankti)}">
+        data-on-click="selectPankti" data-uuid="${uuid}" data-pankti="${dataStringify(
+    pankti
+  )}">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <line x1="12" y1="5" x2="12" y2="19"></line>
         <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -47,7 +46,9 @@ const dsl = (matches: GurbaniMatch[], uuid: string) => {
                   (match, idx) => `
           <div class="match-item" style="margin: 10px 0; padding: 10px; border: 1px solid var(--ls-border-color); position: relative;">
             <div style="cursor: pointer;">
-              <div style="font-weight: bold; margin-right: 40px;">${match.punjabi}</div>
+              <div style="font-weight: bold; margin-right: 40px;">${
+                match.punjabi
+              }</div>
               <div style="color: var(--ls-secondary-text-color);">${
                 match.translit
               }</div>
@@ -75,7 +76,11 @@ const dsl = (matches: GurbaniMatch[], uuid: string) => {
   `;
 };
 
-const shabadDsl = (matches: GurbaniMatch[], results: GurbaniMatch[], uuid: string) => {
+const shabadDsl = (
+  matches: GurbaniMatch[],
+  results: GurbaniMatch[],
+  uuid: string
+) => {
   return `
     <div id="pankti-search">
       <div style="padding: 20px;">
@@ -89,7 +94,9 @@ const shabadDsl = (matches: GurbaniMatch[], results: GurbaniMatch[], uuid: strin
             </svg>
           </div>
           <button style="cursor: pointer; padding: 4px 12px; border-radius: 4px; border: 1px solid var(--ls-border-color); background: var(--ls-primary-background-color); color: var(--ls-primary-text-color);"
-            data-on-click="insertShabad" data-matches="${dataStringify(matches)}" data-uuid="${uuid}">
+            data-on-click="insertShabad" data-matches="${dataStringify(
+              matches
+            )}" data-uuid="${uuid}">
             Insert Shabad
           </button>
         </div>
@@ -98,9 +105,15 @@ const shabadDsl = (matches: GurbaniMatch[], results: GurbaniMatch[], uuid: strin
             .map(
               (line) => `
             <div class="shabad-line" style="margin: 10px 0; padding: 10px; border: 1px solid var(--ls-border-color); position: relative;">
-              <div style="font-weight: bold; margin-right: 40px;">${line.punjabi}</div>
-              <div style="color: var(--ls-secondary-text-color);">${line.translit}</div>
-              <div style="color: var(--ls-secondary-text-color); font-size: 0.9em;">${line.attributes}</div>
+              <div style="font-weight: bold; margin-right: 40px;">${
+                line.punjabi
+              }</div>
+              <div style="color: var(--ls-secondary-text-color);">${
+                line.translit
+              }</div>
+              <div style="color: var(--ls-secondary-text-color); font-size: 0.9em;">${
+                line.attributes
+              }</div>
               ${insertIcon(line, uuid)}
             </div>
           `
@@ -118,7 +131,7 @@ async function searchDatabase(
 ): Promise<GurbaniMatch[]> {
   console.log("Searching database...", searchType, text);
   const response = await fetch(
-    `http://localhost:3033/${searchType}?q=${encodeURIComponent(text)}`
+    `${logseq.settings?.panktiServerUrl}/${searchType}?q=${encodeURIComponent(text)}`
   );
   if (!response.ok) {
     throw new Error("Failed to fetch results");
@@ -152,6 +165,9 @@ const performSearch = async (
     style,
     close: "outside",
     replace: true,
+    attrs: {
+      title: "Pankti Search",
+    },
   });
 
   try {
@@ -189,7 +205,9 @@ const performSearch = async (
       );
     },
 
-    insertShabad: async function (arg: { dataset: { matches: string; uuid: string } }) {
+    insertShabad: async function (arg: {
+      dataset: { matches: string; uuid: string };
+    }) {
       const matches = JSON.parse(arg.dataset.matches);
       const uuid = arg.dataset.uuid;
       const block = await logseq.Editor.getBlock(uuid);
@@ -209,7 +227,7 @@ const performSearch = async (
     }) {
       const shabadId = arg.dataset.shabadId;
       const response = await fetch(
-        `http://localhost:3033/get_shabad/${shabadId}`
+        `${logseq.settings?.panktiServerUrl}/get_shabad/${shabadId}`
       );
       const matches = await response.json();
       logseq.provideUI({
@@ -266,4 +284,15 @@ const main = () => {
   });
 };
 
-logseq.ready(main).catch(console.error);
+logseq
+  .useSettingsSchema([
+    {
+      title: "Server URL",
+      key: "panktiServerUrl",
+      type: "string",
+      default: "http://localhost:3033",
+      description: "URL of the server to fetch Gurbani data.",
+    },
+  ])
+  .ready(main)
+  .catch(console.error);
